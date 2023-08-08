@@ -13,15 +13,23 @@ let () =
     match command with
     | Some "encrypt" -> Cipher.encrypt ~shift contents
     | Some "decrypt" -> Cipher.decrypt ~shift contents
-    | _ -> raise (Invalid_argument "Invalid input the only two commands are encrypt and decrypt\n")
+    | Some _ -> Cipher.encrypt ~shift:0 contents
+    | None -> Cipher.encrypt ~shift:0 contents
   in
-  let flag =
+  let apply =
     match List.nth args 4 with
-    | Some "apply" ->  Out_channel.write_all file ~data:result
+    | Some "apply" -> Out_channel.write_all file ~data:result
     | Some x ->
         let error_msg = "Unknown command " ^ x ^ " did you mean apply?\n" in
         print_string error_msg
     | None -> ()
   in
-  flag;
-  print_string result
+  let error_msg =
+    match command with
+    | Some "encrypt" | Some "decrypt" -> ()
+    | Some _ | None ->
+        print_string "Unkown command try again with encrypt or decrypt.\n"
+  in
+  apply;
+  print_string result;
+  error_msg
